@@ -5,6 +5,10 @@ window.onload = () => {
 const change_event = new Event("change");
 let now = new Date();
 
+const sleep = (ms) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
+
 const convertToJSON = (html_content) => {
   const options = [];
 
@@ -39,7 +43,7 @@ const makeRequest = (path, custom_params) => {
 
   url.search = new URLSearchParams(params).toString();
 
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     fetch(url, { method: "POST" })
       .then((response) => {
         return response.text();
@@ -66,8 +70,8 @@ const findOptions = (course_id) => {
           courseCode: course_id,
         }
       );
-      const response = convertToJSON(html_content);
-      resolve({ course_id, ...response });
+      const slots = convertToJSON(html_content);
+      resolve({ course_id, slots });
     } catch (e) {
       reject(e);
     }
@@ -90,10 +94,12 @@ const findInfo = async () => {
 
     for (let index = 1; index < course_id.length; index++) {
       responses.push(findOptions(course_id[index].value));
+      await sleep(135);
     }
 
     const data = await Promise.all(responses);
     cats[curriculum_category[count].value] = data;
+    await sleep(135);
   }
 
   console.log(cats);
