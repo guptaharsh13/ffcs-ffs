@@ -2,3 +2,5 @@ node_modules/
 extension.crx
 extension.pem
 /test/
+/extension-core/Data.json
+/extension-core/Credits.json
