@@ -78,7 +78,15 @@ const findOptions = (course_id) => {
   });
 };
 
-const findInfo = async () => {
+const downloadJSON = (data, filename) => {
+  const hidden_element = document.createElement("a");
+  hidden_element.href =
+    "data:attachment/json," + encodeURI(JSON.stringify(data));
+  hidden_element.download = `${filename}.json`;
+  hidden_element.click();
+};
+
+const findCourses = async () => {
   const curriculum_category = document.getElementById("curriculumCategory");
 
   const cats = {};
@@ -103,21 +111,49 @@ const findInfo = async () => {
   }
 
   console.log(cats);
+  downloadJSON(cats, "courses");
+};
 
-  const hidden_element = document.createElement("a");
-  hidden_element.href =
-    "data:attachment/json," + encodeURI(JSON.stringify(cats));
-  hidden_element.download = "data.json";
-  hidden_element.click();
+const findCredits = async () => {
+  const response = await makeRequest("vtop/academics/common/Curriculum");
+  const rows = response.querySelectorAll(
+    "#example_0 tbody tr, #example_1 tbody tr, #example_2 tbody tr, #example_3 tbody tr, #example_4 tbody tr"
+  );
+  const courses = [];
+  Array.from(rows).forEach((row) => {
+    course_id = row.children[1].innerText.replace(/(\t|\n)+/g, "");
+    course_title = row.children[2].innerText.replace(/(\t|\n)+/g, "");
+    course_type = row.children[3].innerText.replace(/(\t|\n)+/g, "");
+    version = row.children[4].innerText.replace(/(\t|\n)+/g, "");
+    lecture = row.children[5].innerText.replace(/(\t|\n)+/g, "");
+    tutorial = row.children[6].innerText.replace(/(\t|\n)+/g, "");
+    practical = row.children[7].innerText.replace(/(\t|\n)+/g, "");
+    project = row.children[8].innerText.replace(/(\t|\n)+/g, "");
+    credits = row.children[9].innerText.replace(/(\t|\n)+/g, "");
+    courses.push({
+      course_id,
+      course_title,
+      version,
+      lecture,
+      tutorial,
+      practical,
+      project,
+      credits,
+    });
+  });
+  console.log(courses);
+  downloadJSON(courses, "credits");
 };
 
 const findPage = () => {
   const element = document.querySelector(".box-title");
   if (element.innerText.includes("Course Offered")) {
-    findInfo();
+    findCourses();
   } else {
     requestIdleCallback(findPage);
   }
 };
 
 requestIdleCallback(findPage);
+
+findCredits();
